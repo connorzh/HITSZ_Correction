@@ -1,0 +1,123 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define namelength 14
+#define errorlemgth 20
+#define ERRORLEN   50
+
+int treedepth;
+int treewidth[5];
+//学生成绩树节点，一棵树就是一个学生的成绩
+typedef struct score
+{
+    int studentnum; //学生学号
+    char studentname[namelength];  //学生姓名
+    int errornum[9];//该题的错误编号
+    struct score*  left;
+    struct score*  right;
+} score;
+
+//错误树节点
+typedef struct error
+{
+    int errornumber;  //错误编号
+    char error[errorlemgth];   //错误内容
+    struct error*  left;
+    struct error*  right;
+} error;
+
+
+
+
+
+//错误输入函数；按下FINISH键后，把所有的错误整合成一个长字符串运过来，错误与错误之间有特殊字符分隔开
+//参数： errorquantityo 之前出现过的错误的数量
+//      errorquantityn 新的错误的数量
+//      errorin[ERRORLEN] 传来的错误字符串 格式：{1，3，5，chaung$,chuang$}代表有1/3/5号错误，其中3/5是新错误，分别是chaung和chaung;
+//      questionnumber 题号;格式1/1/1第一题第一小题第一小题
+//      studenttree 学生成绩树
+//      errortree 错误树
+void errorinput(int errorquantityn,int errorquantityo,char questionnumber[7],char errorin[ERRORLEN],score *scoretree,error *errortree)
+{
+    int i,j,k,n = 0,m; //用于循环计数
+    char tmpqsnum;
+    char tmp = errorin[0];
+    error *etmp = errortree;
+    score *stmp = scoretree;
+    etmp->left = (error*)malloc(sizeof(error));
+
+    for(i = 0; i < 7;)
+    {
+        etmp = etmp->left;
+        tmpqsnum = questionnumber[i];
+        if(tmpqsnum != '#')  //在树上找到相应题目
+        {
+            for(j=1; j<tmpqsnum; j++)
+            {
+
+                stmp = stmp->right;
+                if(etmp->right)
+                    etmp = etmp->right;
+                else
+                {
+                    etmp->right = (error*)malloc(sizeof(error));
+                    etmp = etmp->right;
+                }
+            }
+            i++;
+        }
+        if(tmpqsnum == '#')//找到相应题目以后拓展错误点内容
+        {
+
+            for(m = 0; m < errorquantityn + errorquantityo; m++)
+            {
+                stmp->errornum[m] = errorin[m];
+            }
+            if(errorquantityn != 0)
+            {
+                if(etmp->left)
+                {
+                    etmp = etmp->left;
+                }
+                else
+                {
+                    etmp->left = (error*)malloc(sizeof(error));
+                    etmp = etmp->left;
+                }
+                for(k = 0; k < errorquantityo; k++) //找到新错误点节点
+                {
+                    if(etmp->right)
+                    {
+                        etmp = etmp->right;
+                    }
+                    else
+                    {
+                        etmp->right = (error*)malloc(sizeof(error));
+                        etmp = etmp->right;
+                    }
+
+                }
+
+                for(k = 1; k < errorquantityn; k++)   //逐个输入新错误点节点
+                {
+                    etmp->errornumber = errorquantityo + k;
+                    do
+                    {
+                        etmp->error[n] = tmp;
+                        n++;
+                        tmp = errorin[n];
+                    }
+                    while(tmp != '$');
+                    etmp->right = (error*)malloc(sizeof(error));
+                    etmp = etmp->right;
+                }
+            }
+            break;
+        }
+    }
+}
+int main()
+{
+    printf("Hello world!\n");
+    return 0;
+}
